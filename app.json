@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "keep-notes",
+    "slug": "keep-notes",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "keep-notes"
+}
