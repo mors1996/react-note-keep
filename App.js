@@ -23,8 +23,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     marginTop:10, 
+    alignItems: 'center', 
+    paddingHorizontal:32,
+    justifyContent: "center",
 
-    alignItems: 'center',
   },
   wordBold: {
     fontWeight: "bold", 

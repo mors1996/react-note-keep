@@ -1,5 +1,8 @@
 import React from "react";
-import { StyleSheet, Text, View, SafeAreaView, VirtualizedList } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, VirtualizedList, Dimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 import MemoCard from "./MemoCard";
 import {
     Provider,
@@ -29,66 +32,67 @@ export default class NoteView extends React.Component {
     constructor(props) {
         super(props);
         // Don't call this.setState() here!
-        this.state = { notes: [{ "id": 1, "title": "Nota 1", "text": "aaaaaaaaaaaaaaaaaasaasda" }, { "id": 2, "title": "Nota 2", "text": "aaaaaaaaaaaaaaaaaasaasda" }, { "id": 3, "title": "Nota 3" }], clicked: false, selectedNote: {}, newNote: false };
+        this.state = { notes: [], clicked: false, selectedNote: {}, newNote: false };
     }
 
     getItem = (_data, index) => (this.state.notes[index]
     );
 
     getItemCount = (_data) => this.state.notes.length;
-
+    componentDidMount = async () => { var list =  await AsyncStorage.getItem("list"); this.setState({notes: JSON.parse(list)}); }
     render = () => {
         return (
-            <View style={styles.container}>
+
+            <SafeAreaView style={styles.safeArea}>
                 <Text style={styles.boldSubTitle}>Your Notes</Text>
                 <MemoCard onPress={() => this.setVisible(true, {}, true)} new="true" title="Add new note" />
-                <SafeAreaView style={styles.safeArea}>
-                    <VirtualizedList
-                        initialNumToRender={this.state.notes.length}
-                        renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} />}
-                        keyExtractor={item => item.id}
-                        getItemCount={this.getItemCount}
-                        getItem={this.getItem}
-                        style={({ width: '100%' })}
-                    />
-                    <Provider>
-                        <Dialog visible={this.state.clicked} onDismiss={() => this.setVisible(false)}>
-                            <DialogHeader title={(<TextInput
+                <VirtualizedList
+                    contentInsetAdjustmentBehavior="always"
+                    style={styles.list}
+                    horizontal="true"
+                    initialNumToRender={this.state.notes.length}
+                    renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} />}
+                    keyExtractor={item => item.id}
+                    getItemCount={this.getItemCount}
+                    getItem={this.getItem}
+                />
+                <Provider>
+                    <Dialog visible={this.state.clicked} onDismiss={() => this.setVisible(false)}>
+                        <DialogHeader title={(<TextInput
+                            style={styles.dialogText}
+                            defaultValue={this.state.selectedNote.title}
+                            onChangeText={(value) => { this.state.selectedNote.title = value }}
+
+                        />)} />
+                        <DialogContent>
+
+                            <TextInput
                                 style={styles.dialogText}
-                                defaultValue={this.state.selectedNote.title}
-                                onChangeText={(value) => { this.state.selectedNote.title = value }}
+                                defaultValue={this.state.selectedNote.text}
+                                onChangeText={(value) => { this.state.selectedNote.text = value }}
 
-                            />)} />
-                            <DialogContent>
-
-                                <TextInput
-                                    style={styles.dialogText}
-                                    defaultValue={this.state.selectedNote.text}
-                                    onChangeText={(value) => { this.state.selectedNote.text = value }}
-
-                                />
-                            </DialogContent>
-                            <DialogActions>
-                                <Button
-                                    title="Cancel"
-                                    compact
-                                    variant="text"
-                                    onPress={() => this.setVisible(false)}
-                                />
-                                <Button
-                                    title="Confirm"
-                                    compact
-                                    variant="text"
-                                    onPress={() => {
-                                        if (!this.state.newNote) this.setNewItem(this.state.selectedNote);
-                                        else this.addItem(this.state.selectedNote)
-                                        this.setVisible(false)
-                                    }}
-                                />
-                            </DialogActions>
-                        </Dialog></Provider>
-                </SafeAreaView>
-            </View>
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                title="Cancel"
+                                compact
+                                variant="text"
+                                onPress={() => this.setVisible(false)}
+                            />
+                            <Button
+                                title="Confirm"
+                                compact
+                                variant="text"
+                                onPress={() => {
+                                    if (!this.state.newNote) this.setNewItem(this.state.selectedNote);
+                                    else this.addItem(this.state.selectedNote)
+                                    this.setVisible(false)
+                                }}
+                            />
+                        </DialogActions>
+                    </Dialog></Provider>
+            </SafeAreaView>
         );
     }
     setVisible(x, selectedNote = this.state.selectedNote, newNote = false) { this.setState({ clicked: x, selectedNote: selectedNote, newNote: newNote }) }
@@ -97,16 +101,36 @@ export default class NoteView extends React.Component {
     ) {
         var index = this.state.notes.findIndex(x => x.id == item.id)
         this.state.notes[index] = item;
+        var list = this.state.notes;
+        this.updateList(list)
+
     }
-    addItem(item) {
+    async addItem(item) {
         var index = Math.max(...this.state.notes.map(i => i.id))
         item.id = index + 1;
         var list = this.state.notes;
         list.push(item)
         this.setState({ notes: list })
+        this.updateList(list)
+
+
     }
 
-    removeItem(
+    async updateList(list) {
+
+        await AsyncStorage.removeItem(
+            'list',
+        );
+
+        await AsyncStorage.setItem(
+            'list',
+            JSON.stringify(list)
+        );
+
+
+    }
+
+    async removeItem(
         item
     ) {
         var index = this.state.notes.findIndex(x => x.id == item.id)
@@ -114,6 +138,8 @@ export default class NoteView extends React.Component {
         var list = this.state.notes;
         list.splice(index, 1); // 2nd parameter means remove one item only
         this.setState({ notes: list })
+
+        this.updateList(list)
 
     }
 
@@ -126,13 +152,24 @@ export default class NoteView extends React.Component {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        marginHorizontal: 16,
+
+    },
+    list: {
+        width: Dimensions.get('window').width,
     },
 
     safeArea:
     {
-        width: '100%'
+        position: 'relative',
+        overflowY: 'visible',
+        overflowX: 'visible',
+        maxHeight: 'auto',
+        height: '400px',
+        flex: 1,
+        width: Dimensions.get('window').width,
+        alignItems: 'center',
+        justifyContent: "center"
+
     },
     item: {
         backgroundColor: '#f9c2ff',

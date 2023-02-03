@@ -26,6 +26,10 @@ export default class MemoCard extends React.Component {
 
     }
 
+    componentDidUpdate = () => {
+
+    }
+
 
     render = () => {
         return (
@@ -62,7 +66,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'yellow',
         padding: 20,
         marginVertical: 8,
-        maxWidth:'200px'
+        maxWidth: '200px'
     },
     header: {
         fontSize: 32,
