@@ -51,7 +51,7 @@ export default class NoteView extends React.Component {
                     style={styles.list}
                     horizontal="true"
                     initialNumToRender={this.state.notes.length}
-                    renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} />}
+                    renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} updateItemPosition={coord=>{this.updateItemPosition(coord, item)}} coord = {item.coord} />}
                     keyExtractor={item => item.id}
                     getItemCount={this.getItemCount}
                     getItem={this.getItem}
@@ -100,8 +100,8 @@ export default class NoteView extends React.Component {
         item
     ) {
         var index = this.state.notes.findIndex(x => x.id == item.id)
-        this.state.notes[index] = item;
         var list = this.state.notes;
+        list[index] = item;
         this.updateList(list)
 
     }
@@ -113,6 +113,18 @@ export default class NoteView extends React.Component {
         this.setState({ notes: list })
         this.updateList(list)
 
+
+    }
+
+    updateItemPosition(coord, item)
+    {
+
+        var index = this.state.notes.findIndex(x => x.id == item.id)
+        var list = this.state.notes;
+        item.coord = coord
+        
+        list[index] = item;
+        this.updateList(list)
 
     }
 

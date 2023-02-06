@@ -15,7 +15,10 @@ export default class MemoCard extends React.Component {
             onMoveShouldSetPanResponder: () => true,
             onPanResponderMove: Animated.event([null, { dx: this.pan.x, dy: this.pan.y }]),
             onPanResponderRelease: () => {
+                this.props.updateItemPosition(this.pan)
+
                 this.pan.extractOffset();
+
             },
         });
 
@@ -28,6 +31,16 @@ export default class MemoCard extends React.Component {
 
     componentDidUpdate = () => {
 
+    }
+    componentDidMount = () => {
+        if (this.props.coord != null) {
+            let coord = this.props.coord;
+            console.log(coord)
+            console.log(this.pan)
+           // this.pan = new Animated.ValueXY({ x: 100, y:100 });
+            this.pan.setValue( {x: coord.x, y: coord.y});
+
+        }
     }
 
 
