@@ -37,8 +37,8 @@ export default class MemoCard extends React.Component {
             let coord = this.props.coord;
             console.log(coord)
             console.log(this.pan)
-           // this.pan = new Animated.ValueXY({ x: 100, y:100 });
-            this.pan.setValue( {x: coord.x, y: coord.y});
+            // this.pan = new Animated.ValueXY({ x: 100, y:100 });
+            this.pan.setValue({ x: coord.x, y: coord.y });
 
         }
     }
@@ -55,8 +55,9 @@ export default class MemoCard extends React.Component {
                     <Surface elevation={1}
                         category="medium"
                         style={styles.item}>
-                        <IconButton style={styles.closeButton} onPress={this.props.onPressDelete} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}><Icon name="close" size={24}></Icon></IconComponentProvider>)} />
-                        <Text>{this.props.title}</Text><IconButton onPress={this.props.onPress} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}>
+                        {this.props.new !== 'true' &&
+                            <IconButton style={styles.closeButton} onPress={this.props.onPressDelete} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}><Icon name="close" size={24}></Icon></IconComponentProvider>)} />}
+                        <Text>{this.props.title}</Text><IconButton style={styles.middleBtn} onPress={this.props.onPress} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}>
                             <Icon name={this.props.new !== 'true' ? 'pen' : 'plus'} size={24}></Icon></IconComponentProvider>)} color="white" title={"See note"}></IconButton>
                     </Surface>
                 </Animated.View>
@@ -87,6 +88,10 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
+    },
+    middleBtn: {
+        alignContent: "center",
+        alignSelf: "center"
     },
     closeButton: {
         alignSelf: 'flex-end',
