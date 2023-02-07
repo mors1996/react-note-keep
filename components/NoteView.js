@@ -11,11 +11,7 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    TextInput,
-    IconButton,
-    Icon,
-    PortalProvider,
-    useWindowSize
+    TextInput
 } from "@react-native-material/core";
 
 
@@ -35,65 +31,83 @@ export default class NoteView extends React.Component {
         this.state = { notes: [], clicked: false, selectedNote: {}, newNote: false };
     }
 
-    getItem = (_data, index) => (this.state.notes[index]
+    getItem = (_data, index) => (this.state.notes.length > 0 ? this.state.notes[index] : null
     );
 
-    getItemCount = (_data) => this.state.notes.length;
-    componentDidMount = async () => { var list =  await AsyncStorage.getItem("list"); this.setState({notes: JSON.parse(list)}); }
+    getItemCount = (_data) => {
+        try {
+            //console.log(this.state.notes.length)
+
+            return this.state.notes != null ? this.state.notes.length : 0;
+        }
+        catch (ex) {
+            console.error(ex)
+        }
+    }
+    componentDidMount = async () => {
+        console.log("mounted")
+        var list = await AsyncStorage.getItem("list");
+        if (list != null) { console.log("list retrieved"); this.setState({ notes: JSON.parse(list) }); }
+        console.log(this.state.notes)
+    }
+
     render = () => {
-        return (
+        try {
+            return (
 
-            <SafeAreaView style={styles.safeArea}>
-                <Text style={styles.boldSubTitle}>Your Notes</Text>
-                <MemoCard onPress={() => this.setVisible(true, {}, true)} new="true" title="Add new note" />
-                <VirtualizedList
-                    contentInsetAdjustmentBehavior="always"
-                    style={styles.list}
-                    horizontal="true"
-                    initialNumToRender={this.state.notes.length}
-                    renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} updateItemPosition={coord=>{this.updateItemPosition(coord, item)}} coord = {item.coord} />}
-                    keyExtractor={item => item.id}
-                    getItemCount={this.getItemCount}
-                    getItem={this.getItem}
-                />
-                <Provider>
-                    <Dialog visible={this.state.clicked} onDismiss={() => this.setVisible(false)}>
-                        <DialogHeader title={(<TextInput
-                            style={styles.dialogText}
-                            defaultValue={this.state.selectedNote.title}
-                            onChangeText={(value) => { this.state.selectedNote.title = value }}
-
-                        />)} />
-                        <DialogContent>
-
-                            <TextInput
+                <SafeAreaView style={styles.safeArea}>
+                    <Text style={styles.boldSubTitle}>Your Notes</Text>
+                    <MemoCard onPress={() => this.setVisible(true, {}, true)} new="true" title="Add new note" />
+                    <VirtualizedList
+                        contentInsetAdjustmentBehavior="automatic"
+                        style={styles.list}
+                        horizontal="true"
+                        initialNumToRender={this.state.notes != null ? this.state.notes.length : 0}
+                        renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} updateItemPosition={coord => { this.updateItemPosition(coord, item) }} coord={item.coord} />}
+                        keyExtractor={item => item.id}
+                        getItemCount={this.getItemCount}
+                        getItem={this.getItem}
+                    />
+                    <Provider>
+                        <Dialog visible={this.state.clicked} onDismiss={() => this.setVisible(false)}>
+                            <DialogHeader title={(<TextInput
                                 style={styles.dialogText}
-                                defaultValue={this.state.selectedNote.text}
-                                onChangeText={(value) => { this.state.selectedNote.text = value }}
+                                defaultValue={this.state.selectedNote.title}
+                                onChangeText={(value) => { this.state.selectedNote.title = value }}
 
-                            />
-                        </DialogContent>
-                        <DialogActions>
-                            <Button
-                                title="Cancel"
-                                compact
-                                variant="text"
-                                onPress={() => this.setVisible(false)}
-                            />
-                            <Button
-                                title="Confirm"
-                                compact
-                                variant="text"
-                                onPress={() => {
-                                    if (!this.state.newNote) this.setNewItem(this.state.selectedNote);
-                                    else this.addItem(this.state.selectedNote)
-                                    this.setVisible(false)
-                                }}
-                            />
-                        </DialogActions>
-                    </Dialog></Provider>
-            </SafeAreaView>
-        );
+                            />)} />
+                            <DialogContent>
+
+                                <TextInput
+                                    style={styles.dialogText}
+                                    defaultValue={this.state.selectedNote.text}
+                                    onChangeText={(value) => { this.state.selectedNote.text = value }}
+
+                                />
+                            </DialogContent>
+                            <DialogActions>
+                                <Button
+                                    title="Cancel"
+                                    compact
+                                    variant="text"
+                                    onPress={() => this.setVisible(false)}
+                                />
+                                <Button
+                                    title="Confirm"
+                                    compact
+                                    variant="text"
+                                    onPress={() => {
+                                        if (!this.state.newNote) this.setNewItem(this.state.selectedNote);
+                                        else this.addItem(this.state.selectedNote)
+                                        this.setVisible(false)
+                                    }}
+                                />
+                            </DialogActions>
+                        </Dialog></Provider>
+                </SafeAreaView>
+            );
+        }
+        catch (ex) { console.log(ex) }
     }
     setVisible(x, selectedNote = this.state.selectedNote, newNote = false) { this.setState({ clicked: x, selectedNote: selectedNote, newNote: newNote }) }
     setNewItem(
@@ -116,13 +130,12 @@ export default class NoteView extends React.Component {
 
     }
 
-    updateItemPosition(coord, item)
-    {
+    updateItemPosition(coord, item) {
 
         var index = this.state.notes.findIndex(x => x.id == item.id)
         var list = this.state.notes;
         item.coord = coord
-        
+
         list[index] = item;
         this.updateList(list)
 
@@ -175,8 +188,6 @@ const styles = StyleSheet.create({
         position: 'relative',
         overflowY: 'visible',
         overflowX: 'visible',
-        maxHeight: 'auto',
-        height: '400px',
         flex: 1,
         width: Dimensions.get('window').width,
         alignItems: 'center',

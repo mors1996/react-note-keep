@@ -15,6 +15,7 @@ export default class MemoCard extends React.Component {
             onMoveShouldSetPanResponder: () => true,
             onPanResponderMove: Animated.event([null, { dx: this.pan.x, dy: this.pan.y }]),
             onPanResponderRelease: () => {
+                console.log("released panner")
                 this.props.updateItemPosition(this.pan)
 
                 this.pan.extractOffset();
@@ -32,8 +33,10 @@ export default class MemoCard extends React.Component {
     componentDidUpdate = () => {
 
     }
+    
     componentDidMount = () => {
         if (this.props.coord != null) {
+            console.log("Card mounted")
             let coord = this.props.coord;
             console.log(coord)
             console.log(this.pan)
@@ -42,16 +45,16 @@ export default class MemoCard extends React.Component {
 
         }
     }
+    componentDidCatch = () => {
+        console.error("Error")
+    }
 
 
     render = () => {
         return (
-            <View >
+            <View style={styles.container}>
                 <Animated.View
-                    style={{
-                        transform: [{ translateX: this.pan.x }, { translateY: this.pan.y }],
-                    }}
-                    {...this.panResponder.panHandlers}>
+                 >
                     <Surface elevation={1}
                         category="medium"
                         style={styles.item}>
@@ -80,7 +83,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'yellow',
         padding: 20,
         marginVertical: 8,
-        maxWidth: '200px'
     },
     header: {
         fontSize: 32,
