@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Button, Icon, IconButton, Surface } from "@react-native-material/core";
 import { IconComponentProvider } from "@react-native-material/core";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { Animated, PanResponder } from 'react-native';
+import { Animated, PanResponder, TouchableOpacity } from 'react-native';
 
 
 
@@ -12,11 +12,16 @@ export default class MemoCard extends React.Component {
 
     panResponder =
         PanResponder.create({
-            onMoveShouldSetPanResponder: () => true,
+
+            onMoveShouldSetPanResponder: (e, gestureState) => {
+
+                if (gestureState.vx == 0) return false; else { return true; }
+            },
             onPanResponderMove: Animated.event([null, { dx: this.pan.x, dy: this.pan.y }]),
-            onPanResponderRelease: () => {
+            onPanResponderEnd: () => {
                 console.log("released panner")
-                this.props.updateItemPosition(this.pan)
+                if (this.props.updateItemPosition != undefined)
+                    this.props.updateItemPosition(this.pan)
 
                 this.pan.extractOffset();
 
@@ -33,7 +38,7 @@ export default class MemoCard extends React.Component {
     componentDidUpdate = () => {
 
     }
-    
+
     componentDidMount = () => {
         if (this.props.coord != null) {
             console.log("Card mounted")
@@ -54,14 +59,20 @@ export default class MemoCard extends React.Component {
         return (
             <View style={styles.container}>
                 <Animated.View
-                 >
+
+                    style={{
+                        transform: [{ translateX: this.pan.x }, { translateY: this.pan.y }],
+                    }}
+                    {...this.panResponder.panHandlers}
+                >
                     <Surface elevation={1}
                         category="medium"
                         style={styles.item}>
                         {this.props.new !== 'true' &&
-                            <IconButton style={styles.closeButton} onPress={this.props.onPressDelete} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}><Icon name="close" size={24}></Icon></IconComponentProvider>)} />}
-                        <Text>{this.props.title}</Text><IconButton style={styles.middleBtn} onPress={this.props.onPress} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}>
-                            <Icon name={this.props.new !== 'true' ? 'pen' : 'plus'} size={24}></Icon></IconComponentProvider>)} color="white" title={"See note"}></IconButton>
+                            <TouchableOpacity activeOpacity={1} >
+                                <IconButton onPress={this.props.onPressDelete} style={styles.closeButton} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}><Icon name="close" size={32}></Icon></IconComponentProvider>)} /></TouchableOpacity>}
+                        <Text>{this.props.title}</Text><TouchableOpacity activeOpacity={1} ><IconButton onPress={this.props.onPress} style={styles.middleBtn} icon={(<IconComponentProvider IconComponent={MaterialCommunityIcons}>
+                            <Icon name={this.props.new !== 'true' ? 'pen' : 'plus'} size={32}></Icon></IconComponentProvider>)} color="white" title={"See note"}></IconButton></TouchableOpacity>
                     </Surface>
                 </Animated.View>
             </View>);
@@ -83,6 +94,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'yellow',
         padding: 20,
         marginVertical: 8,
+        maxWidth: 150
     },
     header: {
         fontSize: 32,

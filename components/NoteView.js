@@ -57,13 +57,13 @@ export default class NoteView extends React.Component {
 
                 <SafeAreaView style={styles.safeArea}>
                     <Text style={styles.boldSubTitle}>Your Notes</Text>
-                    <MemoCard onPress={() => this.setVisible(true, {}, true)} new="true" title="Add new note" />
+                    <MemoCard onPress={(e) => {e.stopPropagation(); this.setVisible(true, {}, true)}} new="true" title="Add new note" />
                     <VirtualizedList
                         contentInsetAdjustmentBehavior="automatic"
                         style={styles.list}
-                        horizontal="true"
+                        horizontal="false"
                         initialNumToRender={this.state.notes != null ? this.state.notes.length : 0}
-                        renderItem={({ item }) => <MemoCard onPress={() => this.setVisible(true, item)} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} updateItemPosition={coord => { this.updateItemPosition(coord, item) }} coord={item.coord} />}
+                        renderItem={({ item }) => <MemoCard onPress={(e) => {e.stopPropagation(); console.log("pressed");this.setVisible(true, item)}} onPressDelete={() => this.removeItem(item)} new="false" title={item.title} updateItemPosition={coord => { this.updateItemPosition(coord, item) }} coord={item.coord} />}
                         keyExtractor={item => item.id}
                         getItemCount={this.getItemCount}
                         getItem={this.getItem}
@@ -192,6 +192,7 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
         alignItems: 'center',
         justifyContent: "center"
+        
 
     },
     item: {
